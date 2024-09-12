@@ -10,8 +10,7 @@
             "args": [
                 "build",
                 "--summary",
-                "all",
-                "--verbose-llvm-cpu-features"
+                "all"
             ],
             "options": {
                 "cwd": "${workspaceRoot}"

@@ -7,9 +7,10 @@
             "name": "Debug",
             "program": "${workspaceFolder}/zig-out/bin/ZigRipples.exe",
             "args": [],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/zig-out/bin/",
+            "console": "integratedTerminal",
             "preLaunchTask": "zig build",
-            "console": "integratedTerminal"
+            "stopAtEntry": false,
         },
     ]
 }

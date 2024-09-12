@@ -1,6 +1,6 @@
 const std = @import("std");
 const stdout = std.debug;
-const sdl = @cImport(@cInclude("C:\\Users\\Public\\Includes\\SDL2\\include\\SDL.h"));
+const sdl = @import("SDLimport.zig");
 const pSurface = *sdl.SDL_Surface;
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 pub const allocator = gpa.allocator();
