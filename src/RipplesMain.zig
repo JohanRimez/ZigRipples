@@ -1,6 +1,6 @@
 const std = @import("std");
 const stdout = std.debug;
-const sdl = @import("SDLimport.zig");
+const sdl = @import("cImport.zig");
 const pSurface = *sdl.SDL_Surface;
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 pub const allocator = gpa.allocator();
@@ -63,14 +63,27 @@ pub fn main() !void {
     // Init Randomize
     try InitRandomizer(&prng);
     // SDL Initialisation
-    if (sdl.SDL_Init(sdl.SDL_INIT_TIMER) != 0) {
+    if (sdl.SDL_Init(sdl.SDL_INIT_VIDEO) != 0) {
         stdout.print("SDL initialisation error: {s}\n", .{sdl.SDL_GetError()});
         return error.sdl_initialisationerror;
     }
     defer sdl.SDL_Quit();
-    const window: *sdl.SDL_Window = sdl.SDL_CreateWindow("SDL main window", 0, 0, 1600, 900, sdl.SDL_WINDOW_FULLSCREEN_DESKTOP) orelse {
-        stdout.print("SDL window creation failed: {s}\n", .{sdl.SDL_GetError()});
-        return error.sdl_windowcreationfailed;
+    // Prepare full screen (stable alternative for linux)
+    var dm: sdl.SDL_DisplayMode = undefined;
+    if (sdl.SDL_GetDisplayMode(0, 0, &dm) != 0) {
+        std.debug.print("SDL GetDisplayMode error: {s}\n", .{sdl.SDL_GetError()});
+        return error.sdl_initialisationerror;
+    }
+    const window: *sdl.SDL_Window = sdl.SDL_CreateWindow(
+        "Game window",
+        0,
+        0,
+        dm.w,
+        dm.h,
+        sdl.SDL_WINDOW_BORDERLESS | sdl.SDL_WINDOW_MAXIMIZED,
+    ) orelse {
+        std.debug.print("SDL window creation failed: {s}\n", .{sdl.SDL_GetError()});
+        return error.sdl_initialisationerror;
     };
     defer sdl.SDL_DestroyWindow(window);
     sdl.SDL_GetWindowSize(window, @ptrCast(&canvasW), @ptrCast(&canvasH));
@@ -103,6 +116,12 @@ pub fn main() !void {
     for (0..canvasH * canvasW) |index| {
         pixelsCurrent[index] = 0.0;
         pixelsPrevious[index] = 0.0;
+    }
+
+    // Tweak background openGL to avoid screen flickering
+    if (sdl.SDL_GL_GetCurrentContext() != null) {
+        _ = sdl.SDL_GL_SetSwapInterval(1);
+        std.debug.print("Adapted current openGL context for vSync\n", .{});
     }
 
     // Hide mouse
